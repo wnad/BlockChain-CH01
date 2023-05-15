@@ -23,6 +23,8 @@ def create_transaction():
     return jsonify({'note': f'Transaction will be added in block {block_index}.'})
 
 
+
+
 @app.route('/mine', methods=['GET']) # 작업증명
 def mine():
     last_block = bitcoin.get_last_block()
@@ -59,7 +61,6 @@ def mine():
         'block': new_block
     })
 
-
 @app.route('/register-and-broadcast-node', methods=['POST'])
 def register_and_broadcast_node():
     new_node_url = request.json['newNodeUrl']
@@ -70,9 +71,11 @@ def register_and_broadcast_node():
     for network_node_url in bitcoin.network_nodes:
         response = requests.post(f"{network_node_url}/register-node", json={'newNodeUrl': new_node_url}) # 새로운 노드를 연결하는 요청 받은 노드가 원래 연결되어 있던 노드에게 새로운 노드를 등록하는 요청 보내는 API 호출
         reg_nodes_promises.append(response)
+
     for response in reg_nodes_promises:
         if response.status_code == 200:
             requests.post(f"{new_node_url}/register-nodes-bulk", json={'allNetworkNodes': bitcoin.network_nodes + [bitcoin.current_node_url]}) # 새로운 노드를 추가한 뒤 전체 노드 정보를 새로 연결되는 노드에게 주는 API 호출
+
     return jsonify({'note': 'New node registered with network successfully.'})
 
 
@@ -81,10 +84,8 @@ def register_node():
     new_node_url = request.json['newNodeUrl']
     node_not_already_present = new_node_url not in bitcoin.network_nodes #채우시오 : new_node_url이 network_noeds에 없으면 true (type boolean)
     not_current_node = bitcoin.current_node_url != new_node_url #채우시오 : current_node_url이 new_node_url이 아니면 true(type boolean)
-
-    if node_not_already_present and not_current_node: #두 가지 조건을 모두 만족하면 실행
+    if node_not_already_present and not_current_node:#두 가지 조건을 모두 만족하면 실행
         bitcoin.network_nodes.append(new_node_url) #새로운 노드 network_node에 추가
-
     return jsonify({'note': 'New node registered successfully.'})
 
 
@@ -98,7 +99,6 @@ def register_nodes_bulk():
             bitcoin.network_nodes.append(network_node_url) #새로운 노드 network_node에 추가
 
     return jsonify({'note': 'Bulk registration successful.'})
-
 
 @app.route('/transaction/broadcast', methods=['POST'])
 def broadcast_transaction():
@@ -121,7 +121,6 @@ def broadcast_transaction():
         response.raise_for_status()
 
     return jsonify({'note': 'Transaction created and broadcast successfully.'})
-
 
 @app.route('/receive-new-block', methods=['POST'])
 def receive_new_block():
